@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .btn-base {
+    @apply font-medium rounded-lg text-sm text-center mb-2 px-5 py-2.5 focus:outline-none focus:ring-4 transition duration-300 ease-in-out;
+  }
+
+  /* Кольорові варіанти з приглушеним градієнтом або однотонним стилем */
+  .btn-blue {
+    @apply btn-base text-white bg-blue-700 hover:bg-blue-800 focus:ring-blue-300 dark:focus:ring-blue-900;
+  }
+
+  .btn-green {
+    @apply btn-base text-white bg-green-700 hover:bg-green-800 focus:ring-green-300 dark:focus:ring-green-900;
+  }
+
+  .btn-cyan {
+    @apply btn-base text-white bg-cyan-700 hover:bg-cyan-800 focus:ring-cyan-300 dark:focus:ring-cyan-900;
+  }
+
+  .btn-teal {
+    @apply btn-base text-white bg-teal-600 hover:bg-teal-800 focus:ring-teal-300 dark:focus:ring-teal-900;
+  }
+
+  .btn-lime {
+    @apply btn-base text-gray-900 bg-lime-400 hover:bg-lime-700 focus:ring-lime-300 dark:focus:ring-lime-800;
+  }
+
+  .btn-red {
+    @apply btn-base text-white bg-red-600 hover:bg-red-800 focus:ring-red-300 dark:focus:ring-red-900;
+  }
+
+  .btn-pink {
+    @apply btn-base text-white bg-pink-500 hover:bg-pink-700 focus:ring-pink-300 dark:focus:ring-pink-800;
+  }
+
+  .btn-purple {
+    @apply btn-base text-white bg-purple-600 hover:bg-purple-700 focus:ring-purple-300 dark:focus:ring-purple-800;
+  }
+
+  /* Disabled стан */
+  .btn-disabled {
+    @apply opacity-30 cursor-not-allowed pointer-events-none;
+  }
+
+  .btn-outline {
+    @apply btn-base border border-current bg-transparent hover:bg-opacity-10;
+  }
+}
