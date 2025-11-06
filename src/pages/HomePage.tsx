@@ -9,7 +9,7 @@ import {
   resetTyresState,
 } from '../store/slices/tyres/tyresSlice';
 import { RootState } from '../store/store';
-import  debounce  from 'lodash/debounce';
+import debounce from 'lodash/debounce';
 import { toast } from 'react-toastify';
 
 import { TyreFilterField } from '../constants/tyreOptions';
@@ -17,6 +17,7 @@ import { FilterSidebar, TyreGrid, OverlayLoader, EmptyBoxAnimation } from '../co
 import { SortOption } from '../types/tyre';
 import { useAppDispatch, useAppSelector } from '../hooks/reduxHooks';
 import { HomePageSeo } from '../seo/HomePageSeo';
+import { Helmet } from 'react-helmet';
 
 const MemoizedTyreGrid = memo(TyreGrid);
 
@@ -71,10 +72,12 @@ export default function HomePage() {
         isFirstLoad.current = false;
       });
 
+    const debounced = debouncedSearchRef.current;
+
     return () => {
-      debouncedSearchRef.current.cancel();
+      debounced.cancel();
     };
-  }, []);
+  }, [dispatch]);
 
   // 2. Синхронізація URL з filters
   useEffect(() => {
@@ -87,6 +90,7 @@ export default function HomePage() {
     });
 
     const currentParams = searchParams.toString();
+
     const newParams = params.toString();
 
     if (currentParams !== newParams) {
@@ -108,7 +112,7 @@ export default function HomePage() {
         isFetchingRef.current = false;
       });
     }
-  }, [page]);
+  }, [page, dispatch]);
 
   // 5. IntersectionObserver
   useEffect(() => {
@@ -152,8 +156,6 @@ export default function HomePage() {
     dispatch(fetchTyresList());
   }, [dispatch]);
 
-  <HomePageSeo url={process.env.VITE_SITE_URL || ''} />;
-
   if (!isTyresLoading && tyresError && tyres.length === 0 && !isFirstLoad.current) {
     return (
       <div className="flex items-center justify-center h-96 text-center text-red-700">
@@ -166,51 +168,60 @@ export default function HomePage() {
     );
   }
 
+  const now = new Date();
+  const activeTyres = tyres.filter((tyre) => new Date(tyre.expiresAt) > now && !tyre.isDeleted);
+
+  console.log(tyres)
+
   return (
-    <div className="px-12 py-6">
-      <h1 className="text-2xl font-bold mb-4">Оголошення шин</h1>
+    <>
+      <HomePageSeo url={process.env.VITE_SITE_URL || ''} />
 
-      <FilterSidebar
-        filters={filters}
-        onChange={handleFilterChange}
-        onReset={() => dispatch(resetFilters())}
-        sortBy={sortBy}
-        onSortChange={handleSortChange}
-      />
+      <div className="px-12 py-6">
+        <h1 className="text-2xl font-bold mb-4">Оголошення шин</h1>
 
-      {!isTyresLoading && tyres.length > 0 && (
-        <p className="text-sm text-muted-foreground mb-4">
-          Показано {tyres.length} з {total} оголошень
-        </p>
-      )}
+        <FilterSidebar
+          filters={filters}
+          onChange={handleFilterChange}
+          onReset={() => dispatch(resetFilters())}
+          sortBy={sortBy}
+          onSortChange={handleSortChange}
+        />
 
-      {/* Основна секція */}
-      <div>
-        {isTyresLoading && tyres.length === 0 ? (
-          <OverlayLoader />
-        ) : tyres.length > 0 ? (
-          <MemoizedTyreGrid tyres={tyres} currentTab="active" onRemove={handleRemove} />
-        ) : isFirstLoad.current ? null : (
-          <div className="col-span-full flex flex-col items-center justify-center text-center py-16 text-gray-500">
-            <EmptyBoxAnimation />
+        {!isTyresLoading && tyres.length > 0 && (
+          <p className="text-sm text-muted-foreground mb-4">
+            Показано {tyres.length} з {total} оголошень
+          </p>
+        )}
 
-            <h2 className="text-lg font-semibold">Нічого не знайдено 😔</h2>
+        {/* Основна секція */}
+        <div>
+          {isTyresLoading && tyres.length === 0 ? (
+            <OverlayLoader />
+          ) : tyres.length > 0 ? (
+            <MemoizedTyreGrid tyres={activeTyres} currentTab="active" onRemove={handleRemove} />
+          ) : isFirstLoad.current ? null : (
+            <div className="col-span-full flex flex-col items-center justify-center text-center py-16 text-gray-500">
+              <EmptyBoxAnimation />
 
-            <p className="mt-2 text-sm">
-              Спробуйте змінити фільтри або перевірити інші оголошення.
-            </p>
+              <h2 className="text-lg font-semibold">Нічого не знайдено 😔</h2>
+
+              <p className="mt-2 text-sm">
+                Спробуйте змінити фільтри або перевірити інші оголошення.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Infinite scroll loader */}
+        {isTyresLoading && tyres.length > 0 && (
+          <div className="flex justify-center py-4">
+            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-gray-400" />
           </div>
         )}
+
+        <div ref={observerRef} className="h-10" />
       </div>
-
-      {/* Infinite scroll loader */}
-      {isTyresLoading && tyres.length > 0 && (
-        <div className="flex justify-center py-4">
-          <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-gray-400" />
-        </div>
-      )}
-
-      <div ref={observerRef} className="h-10" />
-    </div>
+    </>
   );
 }

@@ -1,5 +1,4 @@
 import { Helmet } from 'react-helmet';
-import logo from '../assets/logo.webp';
 
 interface HomePageSEOProps {
   url: string;
@@ -16,7 +15,7 @@ export const HomePageSeo = ({ url }: HomePageSEOProps) => {
     name: 'Omega Market',
     alternateName: 'Шини Україна',
     url: url,
-    logo: `https://omega-auto.vercel.app/${logo}`,
+    logo: 'https://omega-auto.vercel.app/assets/logo.webp',
     mainEntityOfPage: {
       '@type': 'WebPage',
       '@id': url,

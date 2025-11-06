@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Formik, Form, useFormikContext } from 'formik';
-
-import { TyreForm } from '../../types/tyre';
 import { NumericFormat } from 'react-number-format';
+import { Link, useNavigate } from 'react-router-dom';
 
 import {
   VEHICLE_TYPE_OPTIONS,
@@ -17,10 +16,12 @@ import { ConfirmModal, ImageUploader, OverlayLoader, TyrePreviewModal } from '..
 import { TYRE_ADD_SCHEMA } from '../../schemas/validationSchemas';
 import { FormikSelect } from './FormikSelect';
 import { FormikInput } from './FormikInput';
-import { Link, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../hooks/reduxHooks';
 import { usePrompt } from '../../hooks/usePrompt';
 import { useBeforeUnload } from '../../hooks/useBeforeUnload';
+
+import type { TyreForm } from '../../types/tyre';
+import { FormikChangeWatcher } from './FormikChangeWatcher';
 
 type TyreFormProps = {
   title: string;
@@ -30,6 +31,7 @@ type TyreFormProps = {
   handleSubmit: (values: TyreForm) => void;
   showPreview: boolean;
   setShowPreview: React.Dispatch<React.SetStateAction<boolean>>;
+  clearError: () => void;
 };
 
 export const TyreFormComponent: React.FC<TyreFormProps> = ({
@@ -40,7 +42,9 @@ export const TyreFormComponent: React.FC<TyreFormProps> = ({
   handleSubmit,
   showPreview,
   setShowPreview,
+  clearError,
 }) => {
+  const [usePercent, setUsePercent] = useState<boolean>(!!form.treadPercent);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [shouldBlockNavigation, setShouldBlockNavigation] = useState(false);
 
@@ -53,7 +57,6 @@ export const TyreFormComponent: React.FC<TyreFormProps> = ({
   };
 
   useBeforeUnload(shouldBlockNavigation && !isLoading);
-
   usePrompt(
     'Ви маєте незбережені зміни. Покинути сторінку?',
     shouldBlockNavigation && !showLeaveConfirm && !isLoading,
@@ -73,21 +76,35 @@ export const TyreFormComponent: React.FC<TyreFormProps> = ({
     return null;
   };
 
+  const convertTreadValues = (values: TyreForm) => {
+    const depth = values.treadDepth;
+    const percent = values.treadPercent;
+
+    if (depth && !percent) {
+      values.treadPercent = Math.round((+depth / 8) * 100).toString();
+    } else if (percent && !depth) {
+      values.treadDepth = (+percent * 0.08).toFixed(1);
+    }
+
+    return values;
+  };
+
   return (
     <div>
       {isLoading && <OverlayLoader />}
 
       <Formik
-        enableReinitialize
         initialValues={form}
         validationSchema={TYRE_ADD_SCHEMA}
         onSubmit={(values: TyreForm) => {
-          handleSubmit(values);
+          handleSubmit(convertTreadValues(values));
           setShowPreview(false);
         }}>
         {({ values, setFieldValue, errors, touched }) => (
           <>
             <DirtyWatcher setShouldBlockNavigation={setShouldBlockNavigation} />
+
+            <FormikChangeWatcher clearError={clearError} />
 
             <Form className="space-y-4 max-w-xl mx-auto">
               <FormikInput label="Бренд" name="brand" type="text" placeholder="Бренд" />
@@ -103,14 +120,49 @@ export const TyreFormComponent: React.FC<TyreFormProps> = ({
                 placeholder="Рік виготовлення"
               />
 
-              <FormikInput
-                label="Залишок протектора"
-                name="treadDepth"
-                type="number"
-                min={0}
-                max={12}
-                placeholder="Залишок протектора"
-              />
+              {/* Протектор */}
+              <div className="mb-4">
+                <label className="block mb-1 font-medium">Залишок протектора</label>
+                <div className="flex gap-4 items-center">
+                  <button
+                    type="button"
+                    onClick={() => setUsePercent(false)}
+                    className={`px-3 py-1 rounded border ${
+                      !usePercent ? 'bg-blue-100 border-blue-500' : 'border-gray-300'
+                    }`}>
+                    мм
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setUsePercent(true)}
+                    className={`px-3 py-1 rounded border ${
+                      usePercent ? 'bg-blue-100 border-blue-500' : 'border-gray-300'
+                    }`}>
+                    %
+                  </button>
+                </div>
+
+                {!usePercent ? (
+                  <FormikInput
+                    label=""
+                    name="treadDepth"
+                    type="number"
+                    placeholder="Залишок у мм"
+                    min={0}
+                    max={12}
+                  />
+                ) : (
+                  <FormikInput
+                    label=""
+                    name="treadPercent"
+                    type="number"
+                    placeholder="Залишок у %"
+                    min={0}
+                    max={100}
+                  />
+                )}
+              </div>
 
               <div className="grid grid-cols-3 gap-2">
                 <FormikSelect label="Ширина" name="width" options={TYRE_WIDTH_OPTIONS} />
@@ -163,18 +215,14 @@ export const TyreFormComponent: React.FC<TyreFormProps> = ({
 
               {/* Зображення */}
               <div>
-                <label htmlFor="imageUrl" className="block mb-1 font-medium">
-                  Зображення
-                </label>
+                <label className="block mb-1 font-medium">Зображення</label>
 
                 <ImageUploader
                   images={values.images}
-                  onImagesChange={(updatedImagesOrFn) =>
+                  onImagesChange={(updated) =>
                     setFieldValue(
                       'images',
-                      typeof updatedImagesOrFn === 'function'
-                        ? updatedImagesOrFn(values.images)
-                        : updatedImagesOrFn,
+                      typeof updated === 'function' ? updated(values.images) : updated,
                     )
                   }
                 />
@@ -203,7 +251,6 @@ export const TyreFormComponent: React.FC<TyreFormProps> = ({
                 )}
               </div>
 
-              {/* Повідомлення про підтвердження телефону */}
               {!profile?.phoneVerified && title === 'Додати' && (
                 <div className="bg-yellow-50 border border-yellow-400 text-yellow-700 p-3 rounded-md text-sm">
                   Щоб опублікувати оголошення, потрібно підтвердити номер телефону.{' '}
@@ -213,18 +260,14 @@ export const TyreFormComponent: React.FC<TyreFormProps> = ({
                 </div>
               )}
 
-              {/* Помилки */}
               {error && <div className="text-red-500 text-sm text-center">{error}</div>}
 
-              {/* Кнопки дій */}
               <div className="flex flex-col sm:flex-row justify-center sm:gap-3 gap-2 mt-4">
                 {profile?.phoneVerified && (
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="btn-blue btn-lg w-full sm:w-auto"
-                    aria-label={title !== 'Додати' ? 'Оновити' : 'Опублікувати'}
-                  >
+                    className="btn-blue btn-lg w-full sm:w-auto">
                     {title !== 'Додати' ? 'Оновити' : 'Опублікувати'}
                   </button>
                 )}
@@ -232,23 +275,18 @@ export const TyreFormComponent: React.FC<TyreFormProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowPreview(true)}
-                  className="btn-cyan btn-md w-full sm:w-auto"
-                  aria-label="Переглянути оголошення"
-                >
+                  className="btn-cyan btn-md w-full sm:w-auto">
                   Переглянути оголошення
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setShowLeaveConfirm(true)}
-                  className="btn-red btn-lg w-full sm:w-auto"
-                  aria-label="Скасувати"
-                >
+                  className="btn-red btn-lg w-full sm:w-auto">
                   Скасувати
                 </button>
               </div>
 
-              {/* Модалка попереднього перегляду */}
               <TyrePreviewModal
                 show={showPreview}
                 onClose={() => setShowPreview(false)}

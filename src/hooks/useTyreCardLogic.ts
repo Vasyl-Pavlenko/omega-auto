@@ -9,28 +9,27 @@ export function useTyreCardLogic(tyre: Tyre) {
   const { user } = useAppSelector((state) => state.user);
   const { favorites } = useFavorites();
 
-  // const isOwner = user?.userId === tyre.userId;
   const isOwner = tyre && user ? user?.userId === tyre.userId : false;
 
   const favorite = useMemo(() => {
     if (!tyre) {
-      return false
+      return false;
     }
     
     const favSet = new Set(favorites.map((fav) => (typeof fav === 'string' ? fav : fav._id)));
     return favSet.has(tyre._id);
-  }, [favorites, tyre._id]);
+  }, [favorites, tyre?._id]);
 
   const isViewed = useMemo(() => {
     const viewed = JSON.parse(localStorage.getItem('viewedTyres') || '[]') as string[];
     return viewed.includes(tyre._id);
   }, [tyre._id]);
 
-  const isExpired = isBefore(new Date(tyre.willBeDeletedAt), new Date());
+  const isExpired = isBefore(new Date(tyre.expiresAt), new Date());
   const isExpiringSoon = differenceInDays(new Date(tyre.expiresAt), new Date()) < 3;
 
   const createdDate = useMemo(() => formatDate(tyre.createdAt), [tyre.createdAt]);
-  const expiresDate = useMemo(() => formatDate(tyre.willBeDeletedAt), [tyre.willBeDeletedAt]);
+  const expiresDate = useMemo(() => formatDate(tyre.expiresAt), [tyre.expiresAt]);
 
   return {
     isOwner,

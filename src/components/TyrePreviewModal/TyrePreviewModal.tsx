@@ -35,16 +35,14 @@ export const TyrePreviewModal: React.FC<TyrePreviewModalProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50"
-        >
+          className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ duration: 0.2 }}
             tabIndex={-1}
-            className="bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl shadow-lg relative p-4 sm:p-6"
-          >
+            className="bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl shadow-lg relative p-4 sm:p-6">
             {isLoading && <OverlayLoader />}
 
             <button
@@ -99,7 +97,11 @@ export const TyrePreviewModal: React.FC<TyrePreviewModalProps> = ({
               </div>
 
               <div>
-                <strong>Глибина протектора:</strong> {form.treadDepth} мм
+                <strong>Глибина протектора:</strong> {form.treadDepth && <>{form.treadDepth} мм</>}
+
+                {form.treadDepth && form.treadPercent && ' / '}
+                
+                {form.treadPercent && <>{form.treadPercent} %</>}
               </div>
 
               <div>

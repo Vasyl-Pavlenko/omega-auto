@@ -2,7 +2,22 @@ import { useRef, useState } from 'react';
 import { Plus, Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 
-import { getImageUrlsSet } from '../../utils/getImageUrl';
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+
+import {
+  arrayMove,
+  SortableContext,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+
+import { SortableImage } from './SortableImage';
 
 interface ImageInfo {
   width: number;
@@ -14,10 +29,11 @@ interface Props {
   images: ImageInfo[][];
 }
 
+const MAX_IMAGES = 8;
+
 export const ImageUploader = ({ onImagesChange, images }: Props) => {
   const [uploading, setUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const MAX_IMAGES = 8;
 
   const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -26,14 +42,19 @@ export const ImageUploader = ({ onImagesChange, images }: Props) => {
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files) return;
+    if (!e.target.files) {
+      return;
+    }
+
     const files = Array.from(e.target.files);
+
     await readFiles(files);
   };
 
   const readFiles = async (files: File[]) => {
     if (images.length >= MAX_IMAGES) {
       toast.warning(`Ви досягли максимальної кількості (${MAX_IMAGES}) зображень.`);
+
       return;
     }
 
@@ -46,7 +67,6 @@ export const ImageUploader = ({ onImagesChange, images }: Props) => {
       const uploadedImages = await Promise.all(
         filesToUpload.map(async (file) => {
           const formData = new FormData();
-
           formData.append('image', file);
 
           const response = await fetch(`${process.env.REACT_APP_API_URL}/upload`, {
@@ -73,7 +93,6 @@ export const ImageUploader = ({ onImagesChange, images }: Props) => {
       onImagesChange((prev) => [...prev, ...filtered]);
     } catch (error) {
       console.error(error);
-
       toast.error('Сталася помилка при завантаженні зображень. Спробуйте пізніше.');
     } finally {
       setUploading(false);
@@ -84,26 +103,53 @@ export const ImageUploader = ({ onImagesChange, images }: Props) => {
     onImagesChange((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 5 } }),
+  );
+
+  const handleDragStart = (event: any) => {
+    const isDragAllowed = !event?.active?.event?.target?.closest('[data-no-dnd]');
+
+    if (!isDragAllowed) {
+      event.cancel();
+    }
+  };
+
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+
+    if (active.id !== over?.id) {
+      const oldIndex = images.findIndex((_, i) => i.toString() === active.id);
+      const newIndex = images.findIndex((_, i) => i.toString() === over?.id);
+      onImagesChange((prev) => arrayMove(prev, oldIndex, newIndex));
+    }
+  };
+
   return (
     <div>
       <div
         onDrop={handleDrop}
         onDragOver={(e) => e.preventDefault()}
         onClick={() => inputRef.current?.click()}
-        className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:bg-gray-50 transition relative">
+        className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:bg-gray-50 transition relative"
+      >
         {uploading ? (
           <div className="flex justify-center items-center gap-2 text-gray-600">
             <Loader2 className="animate-spin w-5 h-5" />
+
             <span>Завантаження зображень...</span>
           </div>
         ) : (
           <>
-            <Plus className="mx-auto text-gray-400 mb-2" />
+              <Plus className="mx-auto text-gray-400 mb-2" />
+              
             <p className="text-sm text-gray-600">
               Перетягніть або натисніть для завантаження — максимум {MAX_IMAGES} зображень
             </p>
           </>
         )}
+
         <input
           multiple
           type="file"
@@ -114,38 +160,29 @@ export const ImageUploader = ({ onImagesChange, images }: Props) => {
         />
       </div>
 
-      <div className="flex flex-wrap gap-2 mt-4 overflow-x-auto">
-        {images.map((group, i) => {
-          if (!group || group.length === 0 || !group[0]?.url) {
-            return null;
-          }
-
-          const { src, srcSet, sizes } = getImageUrlsSet(group);
-
-          return (
-            <div key={i} className="relative group">
-              <img
-                src={src}
-                srcSet={srcSet}
-                sizes={sizes}
-                alt={`img-${i}`}
-                className="w-24 h-24 object-cover rounded-xl border"
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={images.map((_, i) => i.toString())}
+          strategy={verticalListSortingStrategy}
+        >
+          <div className="flex flex-wrap gap-2 mt-4 overflow-x-auto">
+            {images.map((group, index) => (
+              <SortableImage
+                key={index}
+                id={index.toString()}
+                group={group}
+                index={index}
+                onDelete={handleDeleteImage}
               />
-              <button
-                type="button"
-                title="Видалити фото"
-                aria-label="Видалити фото"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteImage(i);
-                }}
-                className="absolute top-1 right-1 bg-black bg-opacity-60 text-white rounded-full p-1 text-xs opacity-0 group-hover:opacity-100 transition">
-                ✖
-              </button>
-            </div>
-          );
-        })}
-      </div>
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
     </div>
   );
 };

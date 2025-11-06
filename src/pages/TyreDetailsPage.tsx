@@ -67,57 +67,60 @@ const TyreDetailPage = () => {
     );
   }
 
-  <TyreSeo tyre={tyre} url={window.location.href} />;
+  
 
   const TyreCarousel = React.lazy(() => import('../components/TyreCarousel/TyreCarousel'));
 
   return (
-    <div className="p-4 sm:p-6 max-w-4xl mx-auto my-8 bg-white rounded-2xl shadow-xl">
-      <TyreHeader
-        title={tyre.title}
-        isFavorite={!!tyre.isFavorite}
-        loading={favoriteLoading}
-        onToggle={handleToggleFavorite}
-        isOwner={isOwner}
-        tyreId={tyre._id}
-      />
+    <>
+      <TyreSeo tyre={tyre} url={window.location.href} />
+      <div className="p-4 sm:p-6 max-w-4xl mx-auto my-8 bg-white rounded-2xl shadow-xl">
+        <TyreHeader
+          title={tyre.title}
+          isFavorite={!!tyre.isFavorite}
+          loading={favoriteLoading}
+          onToggle={handleToggleFavorite}
+          isOwner={isOwner}
+          tyreId={tyre._id}
+        />
 
-      {tyre.images?.length > 0 && (
-        <Suspense fallback={<Spinner />}>
-          <TyreCarousel images={tyre.images} />
-        </Suspense>
-      )}
+        {tyre.images?.length > 0 && (
+          <Suspense fallback={<Spinner />}>
+            <TyreCarousel images={tyre.images} title={tyre.title} />
+          </Suspense>
+        )}
 
-      <TyreInfoGrid tyre={tyre} isOwner={isOwner} />
+        <TyreInfoGrid tyre={tyre} isOwner={isOwner} />
 
-      <TyreMetaInfo
-        createdDate={createdDate}
-        expiresDate={expiresDate}
-        views={tyre.views}
-        isActive={tyre.isActive}
-      />
+        <TyreMetaInfo
+          createdDate={createdDate}
+          expiresDate={expiresDate}
+          views={tyre.views}
+          isActive={tyre.isActive}
+        />
 
-      <TyreDescription description={tyre.description} />
+        <TyreDescription description={tyre.description} />
 
-      <TyreActions
-        tyre={tyre}
-        isOwner={isOwner}
-        contact={tyre.contact}
-        onBack={() => navigate(-1)}
-        onDeleteClick={() => openTypedModal('delete')}
-        onExtend={() => openTypedModal('extend')}
-        isDeleting={modalType === 'delete' && isOpen && isLoading}
-        isExtending={modalType === 'extend' && isOpen && isLoading}
-      />
+        <TyreActions
+          tyre={tyre}
+          isOwner={isOwner}
+          contact={tyre.contact}
+          onBack={() => navigate(-1)}
+          onDeleteClick={() => openTypedModal('delete')}
+          onExtend={() => openTypedModal('extend')}
+          isDeleting={modalType === 'delete' && isOpen && isLoading}
+          isExtending={modalType === 'extend' && isOpen && isLoading}
+        />
 
-      <ConfirmModal
-        isOpen={isOpen}
-        confirmType={modalType || 'custom'}
-        isLoading={isLoading}
-        onConfirm={() => handleConfirm()}
-        onCancel={closeModal}
-      />
-    </div>
+        <ConfirmModal
+          isOpen={isOpen}
+          confirmType={modalType || 'custom'}
+          isLoading={isLoading}
+          onConfirm={() => handleConfirm()}
+          onCancel={closeModal}
+        />
+      </div>
+    </>
   );
 };
 

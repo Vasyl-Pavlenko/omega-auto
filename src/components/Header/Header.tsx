@@ -63,13 +63,15 @@ export const Header = () => {
             /assets/logo-80.webp 80w
           "
           sizes="(max-width: 640px) 24px, (max-width: 1024px) 32px, 40px"
-          className="w-10 h-10 mr-2"
+          className="w-10 h-10 mr-2 rounded-xl"
           alt="Логотип"
           width={40}
           height={40}
         />
 
-        <span className="text-white font-bold text-xl">Omega Auto</span>
+        <span className="text-white font-bold text-xl capitalize whitespace-nowrap">
+          Omega Auto
+        </span>
       </Link>
 
       {/* Бургер кнопка */}
@@ -106,6 +108,18 @@ export const Header = () => {
               : 'hover:border-b-2 hover:border-cyan-400'
           }`}>
           Додати оголошення
+        </Link>
+
+        <Link
+          to="/guides"
+          onClick={() => setMenuOpen(false)}
+          className={`text-lg ${
+            isActive('/guides')
+              ? 'border-b-2 border-cyan-400'
+              : 'hover:border-b-2 hover:border-cyan-400'
+            }`}
+        >
+          Корисні статті
         </Link>
 
         {isLoggedIn ? (

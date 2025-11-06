@@ -51,23 +51,34 @@ export const PROFILE_SCHEMA = object({
   phone: string(),
 });
 
-export const TYRE_ADD_SCHEMA = object({
-  brand: string().required('Обов’язкове поле'),
-  model: string().required('Обов’язкове поле'),
-  year: number()
-    .required('Обов’язкове поле')
-    .min(1900, 'Занадто рано')
-    .max(new Date().getFullYear(), 'Невірний рік'),
-  treadDepth: number().required('Обов’язкове поле').min(0, 'Мінімум 0').max(12, 'Максимум 12'),
-  width: string().required('Обов’язкове поле'),
-  height: string().required('Обов’язкове поле'),
-  radius: string().required('Обов’язкове поле'),
-  quantity: number().required('Обов’язкове поле').positive('Кількість повинна бути більшою за нуль'),
-  season: string().required('Обов’язкове поле'),
-  vehicle: string().required('Обов’язкове поле'),
-  condition: string().required('Обов’язкове поле'),
-  city: string().required('Обов’язкове поле'),
-  price: number().required('Обов’язкове поле').positive('Ціна повинна бути більшою за нуль'),
-  contact: string().required('Обов’язкове поле'),
-  description: string().required('Обов’язкове поле'),
-});
+export const TYRE_ADD_SCHEMA = object()
+  .shape({
+    brand: string().required('Обов’язкове поле'),
+    model: string(),
+    year: number()
+      .required('Обов’язкове поле')
+      .min(1900, 'Занадто рано')
+      .max(new Date().getFullYear(), 'Невірний рік'),
+    treadDepth: number().min(0, 'Мінімум 0').max(12, 'Максимум 12').nullable(),
+    treadPercent: number().min(0, 'Мінімум 0%').max(100, 'Максимум 100%').nullable(),
+    width: number().required('Обов’язкове поле'),
+    height: number().required('Обов’язкове поле'),
+    radius: number().required('Обов’язкове поле'),
+    quantity: number()
+      .required('Обов’язкове поле')
+      .positive('Кількість повинна бути більшою за нуль'),
+    season: string().required('Обов’язкове поле'),
+    vehicle: string().required('Обов’язкове поле'),
+    condition: string().required('Обов’язкове поле'),
+    city: string().required('Обов’язкове поле'),
+    price: number().required('Обов’язкове поле').positive('Ціна повинна бути більшою за нуль'),
+    contact: number().required('Обов’язкове поле'),
+    description: string().required('Обов’язкове поле'),
+  })
+  .test(
+    'tread-check',
+    'Потрібно вказати або глибину протектора, або його відсоток',
+    function (value) {
+      return !!value.treadDepth || !!value.treadPercent;
+    },
+  );

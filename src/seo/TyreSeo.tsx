@@ -10,17 +10,24 @@ export const TyreSeo = ({ tyre, url }: TyreDetailSEOProps) => {
   const title = `Шина ${tyre.brand} ${tyre.model} ${tyre.width}/${tyre.height}R${tyre.radius} | Omega Tyres Market`;
   const rawDescription = tyre.description?.slice(0, 160) || 'Деталі оголошення про шини';
   const description = rawDescription.replace(/\s+/g, ' ').trim();
-  
+
   const image =
-    tyre.images?.[0]?.find((img) => img.width === 800)?.url || tyre.images?.[0]?.[0]?.url;
-  
+    tyre.images?.[0]?.find((img) => img.width === 800)?.url ||
+    tyre.images?.[0]?.[0]?.url ||
+    undefined;
+
+  const allImages =
+    tyre.images?.flatMap((imgArray) =>
+      imgArray.map((img) => (typeof img.url === 'string' ? img.url : null)).filter(Boolean),
+    ) || [];
+
   const canonicalUrl = url;
 
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: title,
-    image: tyre.images,
+    image: allImages,
     description,
     sku: tyre._id,
     brand: {
@@ -72,15 +79,17 @@ export const TyreSeo = ({ tyre, url }: TyreDetailSEOProps) => {
       <meta property="og:description" content={description} />
       <meta property="og:type" content="product" />
       <meta property="og:url" content={canonicalUrl} />
-      
-      {image && (
-        <>
-          <meta property="og:image" content={image} />
-          <meta property="og:image:alt" content={`Шина ${tyre.brand} ${tyre.model}`} />
-          <meta property="og:image:width" content="1200" />
-          <meta property="og:image:height" content="630" />
-        </>
-      )}
+
+      {image && [
+        <meta key="og-image" property="og:image" content={image} />,
+        <meta
+          key="og-image-alt"
+          property="og:image:alt"
+          content={`Шина ${tyre.brand} ${tyre.model}`}
+        />,
+        <meta key="og-image-width" property="og:image:width" content="1200" />,
+        <meta key="og-image-height" property="og:image:height" content="630" />,
+      ]}
 
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
@@ -91,8 +100,14 @@ export const TyreSeo = ({ tyre, url }: TyreDetailSEOProps) => {
       {image && <meta name="twitter:image:alt" content={`Шина ${tyre.brand} ${tyre.model}`} />}
 
       {/* Structured data */}
-      <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
-      <script type="application/ld+json">{JSON.stringify(breadcrumbData)}</script>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbData) }}
+      />
     </Helmet>
   );
 };

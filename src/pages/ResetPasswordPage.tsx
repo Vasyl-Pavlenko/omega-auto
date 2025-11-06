@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { resetPassword } from '../api/api';
 import { PasswordInput } from '../components';
 import { PASSWORD_SCHEMA } from '../schemas/validationSchemas';
+import { Helmet } from 'react-helmet';
 
 const SubmitButton = lazy(() => import('../components/SubmitButton/SubmitButton'));
 
@@ -49,34 +50,44 @@ const ResetPasswordPage = () => {
   }
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100 px-4">
-      <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg">
-        <h2 className="text-2xl font-semibold text-center mb-6">Новий пароль</h2>
+    <>
+      <Helmet>
+        <title>Скидання паролю | Omega Auto</title>
+        <meta
+          name="description"
+          content="Введіть новий пароль для відновлення доступу до акаунту."
+        />
+      </Helmet>
 
-        {success ? (
-          <p className="text-center text-green-600">
-            Пароль успішно змінено! Ви будете перенаправлені на сторінку входу...
-          </p>
-        ) : (
-          <Formik
-            initialValues={{ newPassword: '' }}
-            validationSchema={PASSWORD_SCHEMA}
-            onSubmit={handleSubmit}>
-            {({ isSubmitting }) => (
-              <Form>
-                <PasswordInput
-                  label="Новий пароль"
-                  name="newPassword"
-                  placeholder="Введіть новий пароль"
-                />
+      <div className="flex justify-center items-center min-h-screen bg-gray-100 px-4">
+        <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg">
+          <h2 className="text-2xl font-semibold text-center mb-6">Новий пароль</h2>
 
-                <SubmitButton text="Зберегти" isLoading={isSubmitting} />
-              </Form>
-            )}
-          </Formik>
-        )}
+          {success ? (
+            <p className="text-center text-green-600">
+              Пароль успішно змінено! Ви будете перенаправлені на сторінку входу...
+            </p>
+          ) : (
+            <Formik
+              initialValues={{ newPassword: '' }}
+              validationSchema={PASSWORD_SCHEMA}
+              onSubmit={handleSubmit}>
+              {({ isSubmitting }) => (
+                <Form>
+                  <PasswordInput
+                    label="Новий пароль"
+                    name="newPassword"
+                    placeholder="Введіть новий пароль"
+                  />
+
+                  <SubmitButton text="Зберегти" isLoading={isSubmitting} />
+                </Form>
+              )}
+            </Formik>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

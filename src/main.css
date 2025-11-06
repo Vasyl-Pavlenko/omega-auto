@@ -25,3 +25,22 @@ button:focus {
 .no-scroll {
   overflow: hidden;
 }
+
+.swiper-modal .swiper-button-next,
+.swiper-modal .swiper-button-prev {
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  color: white;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+}
+
+.swiper-modal .swiper-button-prev {
+  left: 10px;
+}
+
+.swiper-modal .swiper-button-next {
+  right: 10px;
+}

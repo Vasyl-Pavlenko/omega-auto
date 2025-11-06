@@ -7,8 +7,10 @@ import { TyreForm } from '../types/tyre';
 
 import { OverlayLoader, TyreFormComponent } from '../components';
 import { useAppSelector } from '../hooks/reduxHooks';
+import { Helmet } from 'react-helmet';
 
 export default function AddTyrePage() {
+  const [formValues, setFormValues] = useState<TyreForm | null>(null);
   const [initialValues, setInitialValues] = useState<TyreForm>({
     brand: '',
     model: '',
@@ -20,6 +22,7 @@ export default function AddTyrePage() {
     vehicle: '',
     year: '',
     treadDepth: '',
+    treadPercent: '',
     city: '',
     condition: '',
     price: '',
@@ -81,6 +84,7 @@ export default function AddTyrePage() {
     setIsLoading(true);
 
     try {
+      setFormValues(values);
       const res = await createTyre({
         ...values,
         title: `${values.width}/${values.height}/${values.radius}`,
@@ -105,23 +109,47 @@ export default function AddTyrePage() {
     }
   };
 
+  useEffect(() => {
+    if (error) {
+      const timeout = setTimeout(() => setError(''), 4000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [error]);
+
+  const handleClearError: () => void = () => {
+    if (error) {
+      setError('');
+    }
+  };
+
   return (
-    <div className="p-4 py-10 my-10 max-w-sm sm:max-w-xl mx-auto bg-white rounded-xl shadow space-y-3 relative">
-      <h1 className="text-xl font-bold text-center mb-4">Додати оголошення</h1>
-
-      {(isLoading || isProfileLoading) && <OverlayLoader />}
-
-      {!isLoading && !isProfileLoading && (
-        <TyreFormComponent
-          title="Додати"
-          error={error}
-          form={initialValues}
-          isLoading={isLoading}
-          handleSubmit={handleSubmit}
-          showPreview={showPreview}
-          setShowPreview={setShowPreview}
+    <>
+      <Helmet>
+        <title>Додати оголошення | Omega Auto</title>
+        <meta
+          name="description"
+          content="Створіть нове оголошення про продаж шин. Швидко та просто на Omega Auto"
         />
-      )}
-    </div>
+      </Helmet>
+      <div className="p-4 py-10 my-10 max-w-sm sm:max-w-xl mx-auto bg-white rounded-xl shadow space-y-3 relative">
+        <h1 className="text-xl font-bold text-center mb-4">Додати оголошення</h1>
+
+        {(isLoading || isProfileLoading) && <OverlayLoader />}
+
+        {!isLoading && !isProfileLoading && (
+          <TyreFormComponent
+            title="Додати"
+            error={error}
+            form={formValues || initialValues}
+            isLoading={isLoading}
+            handleSubmit={handleSubmit}
+            showPreview={showPreview}
+            setShowPreview={setShowPreview}
+            clearError={handleClearError}
+          />
+        )}
+      </div>
+    </>
   );
 }

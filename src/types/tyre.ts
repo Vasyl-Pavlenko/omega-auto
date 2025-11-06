@@ -15,11 +15,13 @@ export interface Tyre {
   height: string;
   radius: string;
   title: string;
+  slug: string;
   season: Season;
   vehicle: VehicleType;
   year: number;
   quantity: number;
-  treadDepth: number;
+  treadDepth: string;
+  treadPercent: string;
   city: string;
   condition: Condition;
   price: number;
@@ -95,6 +97,7 @@ export interface TyreForm {
   vehicle: VehicleType;
   year: string;
   treadDepth: string;
+  treadPercent: string;
   city: string;
   condition: Condition;
   price: string;

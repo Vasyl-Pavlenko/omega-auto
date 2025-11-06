@@ -53,7 +53,7 @@ export const activateTyre = createAsyncThunk(
   'tyres/activate',
   async (id: string, { rejectWithValue }) => {
     try {
-      const res = await API.patch(`/api/tyres/${id}/activate`);
+      await API.patch(`/api/tyres/${id}/activate`);
       return id;
     } catch (error) {
       return rejectWithValue('Не вдалося активувати оголошення');
@@ -160,13 +160,18 @@ const tyresSlice = createSlice({
       .addCase(fetchTyresList.fulfilled, (state, action) => {
         const { tyres, total } = action.payload;
 
+        const activeTyres = tyres.filter((t) => !t.isExpired && t.isActive);
+
         state.tyres =
           state.page === 1
-            ? tyres
+            ? activeTyres
             : [
                 ...state.tyres,
-                ...tyres.filter((t) => !state.tyres.some((existing) => existing._id === t._id)),
+                ...activeTyres.filter(
+                  (t) => !state.tyres.some((existing) => existing._id === t._id),
+                ),
               ];
+
         state.total = total;
         state.hasMore = state.page * PAGE_SIZE < total;
         state.loading = false;
@@ -182,10 +187,12 @@ const tyresSlice = createSlice({
       })
       .addCase(removeTyreFromActive.fulfilled, (state, action) => {
         state.loading = false;
+
         const tyre = state.tyres.find((t) => t._id === action.payload.id);
 
         if (tyre) {
           tyre.isDeleted = true;
+          tyre.isActive = false;
         }
       })
       .addCase(removeTyreFromActive.rejected, (state) => {
@@ -215,6 +222,7 @@ const tyresSlice = createSlice({
           tyre.isActive = true;
           tyre.isDeleted = false;
         }
+
         state.loading = false;
       })
       .addCase(activateTyre.rejected, (state) => {

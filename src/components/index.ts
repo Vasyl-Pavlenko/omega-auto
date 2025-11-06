@@ -33,4 +33,5 @@ export * from './TyreMetaInfo';
 export * from './TyreDescription';
 export * from './TyreActions';
 export * from './Badge';
+export * from './TreadBadge';
   

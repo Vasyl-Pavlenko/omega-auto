@@ -22,12 +22,14 @@ export const badgeColors: Record<string, string> = {
 
 interface BadgeProps {
   label: string;
-  icon?: string;
+  icon?:  ReactNode;
   children?: ReactNode;
+  title?: string;
 }
 
-export const Badge = ({ label, icon, children }: BadgeProps) => (
+export const Badge = ({ label, icon, children, title }: BadgeProps) => (
   <span
+    title={title}
     className={`text-xs font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1 select-none ${
       badgeColors[label] || 'bg-gray-100 text-gray-800'
       }`}
@@ -35,7 +37,7 @@ export const Badge = ({ label, icon, children }: BadgeProps) => (
     {icon && <span aria-hidden="true">{icon}</span>}
 
     {children}
-    
+
     {label}
   </span>
 );

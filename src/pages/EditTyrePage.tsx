@@ -7,6 +7,7 @@ import { TyreForm } from '../types/tyre';
 
 import { OverlayLoader, TyreFormComponent } from '../components';
 import { useAppSelector } from '../hooks/reduxHooks';
+import { Helmet } from 'react-helmet';
 
 export default function EditTyrePage() {
   const { id } = useParams<{ id: string }>();
@@ -88,6 +89,20 @@ export default function EditTyrePage() {
     }
   };
 
+  useEffect(() => {
+    if (error) {
+      const timeout = setTimeout(() => setError(''), 4000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [error]);
+
+  const handleClearError: () => void = () => {
+    if (error) {
+      setError('');
+    }
+  };
+
   if (!initialValues) {
     if (!profile) {
       return null;
@@ -97,24 +112,35 @@ export default function EditTyrePage() {
   }
 
   return (
-    <div className="p-4 py-10 my-10 max-w-sm sm:max-w-xl mx-auto bg-white rounded-xl shadow space-y-3 relative">
-      <h1 className="text-xl font-bold text-center mb-4">Редагувати оголошення</h1>
-
-      {(!profile || !initialValues) && <OverlayLoader />}
-
-      {profile && initialValues && !isLoading && (
-        <TyreFormComponent
-          title="Оновити"
-          error={error}
-          form={initialValues}
-          isLoading={isLoading}
-          handleSubmit={handleSubmit}
-          showPreview={showPreview}
-          setShowPreview={setShowPreview}
+    <>
+      <Helmet>
+        <title>Редагувати оголошення | Omega Auto</title>
+        <meta
+          name="description"
+          content="Відредагуйте ваше оголошення про шини, оновіть інформацію або фотографії."
         />
-      )}
+      </Helmet>
+      
+      <div className="p-4 py-10 my-10 max-w-sm sm:max-w-xl mx-auto bg-white rounded-xl shadow space-y-3 relative">
+        <h1 className="text-xl font-bold text-center mb-4">Редагувати оголошення</h1>
 
-      {isLoading && <OverlayLoader />}
-    </div>
+        {(!profile || !initialValues) && <OverlayLoader />}
+
+        {profile && initialValues && !isLoading && (
+          <TyreFormComponent
+            title="Оновити"
+            error={error}
+            form={initialValues}
+            isLoading={isLoading}
+            handleSubmit={handleSubmit}
+            showPreview={showPreview}
+            setShowPreview={setShowPreview}
+            clearError={handleClearError}
+          />
+        )}
+
+        {isLoading && <OverlayLoader />}
+      </div>
+    </>
   );
 }

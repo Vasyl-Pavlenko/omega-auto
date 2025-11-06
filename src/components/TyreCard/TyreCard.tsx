@@ -1,19 +1,18 @@
 import { useState, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Eye, PhoneCall, MapPin, Calendar, Layers, PackageCheck, Zap, Truck } from 'lucide-react';
+import { Eye, PhoneCall } from 'lucide-react';
 
 import {
   ActivateButton,
   Badge,
-  conditionIcons,
   ConfirmModal,
   FavoriteButton,
   OwnerControls,
   OwnerInfo,
-  seasonIcons,
   TyreImageLink,
   TyreInfoGrid,
 } from '../index';
+
 import { Tyre } from '../../types/tyre';
 import { useTyreActions } from '../../hooks/useTyreActions';
 import { useConfirmModal } from '../../hooks/useConfirmModal';
@@ -28,8 +27,6 @@ interface TyreCardProps {
 }
 
 type ModalType = 'delete' | 'activate' | 'extend' | null;
-
-const iconStyle = 'w-4 h-4 text-gray-500';
 
 export const TyreCard = ({ tyre, onRemove, currentTab, isFirstVisible }: TyreCardProps) => {
   const [modalType, setModalType] = useState<ModalType>(null);
@@ -47,7 +44,9 @@ export const TyreCard = ({ tyre, onRemove, currentTab, isFirstVisible }: TyreCar
 
   const { isOpen, openModal, closeModal, handleConfirm } = useConfirmModal({
     onConfirm: () => {
-      if (modalType) onConfirm(tyre._id, modalType);
+      if (modalType) {
+        onConfirm(tyre._id, modalType)
+      };
     },
   });
 
@@ -65,6 +64,7 @@ export const TyreCard = ({ tyre, onRemove, currentTab, isFirstVisible }: TyreCar
           tyreId={tyre._id}
           image={firstImage}
           alt={tyre.title}
+          slug={tyre.slug}
           isFirstVisible={isFirstVisible}
         />
 
@@ -83,8 +83,6 @@ export const TyreCard = ({ tyre, onRemove, currentTab, isFirstVisible }: TyreCar
             <Eye className="w-4 h-4" aria-hidden="true" /> Переглянуто
           </span>
         )}
-
-        {isExpired && isOwner && <Badge label="Неактивне" icon="⛔" />}
 
         {isExpiringSoon && !isExpired && <Badge label="Закінчується скоро" icon="⚠️" />}
       </div>
@@ -107,7 +105,8 @@ export const TyreCard = ({ tyre, onRemove, currentTab, isFirstVisible }: TyreCar
           createdDate={createdDate}
           expiresDate={expiresDate}
           isExpiringSoon={isExpiringSoon}
-          isActive={!isExpired}
+          isActive={tyre.isActive}
+          isDeleted={tyre.isDeleted}
         />
       )}
 

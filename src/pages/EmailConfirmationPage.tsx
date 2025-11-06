@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import '../styles/buttons.css';
 import { useAppDispatch, useAppSelector } from '../hooks/reduxHooks';
 import { clearPendingEmail } from '../store/slices/user/userSlice';
+import { Helmet } from 'react-helmet';
 
 export default function EmailConfirmationPage() {
   const reduxEmail = useAppSelector(({ user }) => user.pendingEmail);
@@ -79,42 +80,67 @@ export default function EmailConfirmationPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 px-4">
-      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center border border-gray-200">
-        <h2
-          className={`text-3xl font-bold mb-4 ${
-            status === 'success' ? 'text-green-600' : 'text-red-600'
-            }`}
-        >
-          {status === 'success' ? 'Успішно!' : 'Підтвердження не виконано'}
-        </h2>
+    <>
+      <Helmet>
+        <title>Підтвердження електронної пошти | Omega Auto</title>
+        <meta
+          name="description"
+          content="Підтвердіть свою електронну адресу для активації акаунту на Omega Auto."
+        />
+      </Helmet>
+      
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 px-4">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center border border-gray-200">
+          <h2
+            className={`text-3xl font-bold mb-4 ${
+              status === 'success' ? 'text-green-600' : 'text-red-600'
+            }`}>
+            {status === 'success' ? 'Успішно!' : 'Підтвердження не виконано'}
+          </h2>
 
-        <p className="text-gray-700 text-lg mb-6">{message}</p>
+          <p className="text-gray-700 text-lg mb-6">{message}</p>
 
-        {status === 'success' && (
-          <button type='button' aria-label='Перейти до входу' onClick={() => navigate('/login')} className="btn-blue btn-lg" >
-            Перейти до входу
-          </button>
-        )}
-
-        {status === 'expired' && (
-          <div className="flex flex-col items-center gap-3">
-            <button type='button' aria-label='Надіслати лист повторно' onClick={handleResend} className="btn-lime btn-lg">
-              Надіслати лист повторно
+          {status === 'success' && (
+            <button
+              type="button"
+              aria-label="Перейти до входу"
+              onClick={() => navigate('/login')}
+              className="btn-blue btn-lg">
+              Перейти до входу
             </button>
+          )}
 
-            <button type='button' aria-label='Повернутись на головну' onClick={() => navigate('/')} className="btn-blue btn-lg">
+          {status === 'expired' && (
+            <div className="flex flex-col items-center gap-3">
+              <button
+                type="button"
+                aria-label="Надіслати лист повторно"
+                onClick={handleResend}
+                className="btn-lime btn-lg">
+                Надіслати лист повторно
+              </button>
+
+              <button
+                type="button"
+                aria-label="Повернутись на головну"
+                onClick={() => navigate('/')}
+                className="btn-blue btn-lg">
+                Повернутись на головну
+              </button>
+            </div>
+          )}
+
+          {status === 'error' && (
+            <button
+              type="button"
+              aria-label="Повернутись на головну"
+              onClick={() => navigate('/')}
+              className="btn-blue btn-lg">
               Повернутись на головну
             </button>
-          </div>
-        )}
-
-        {status === 'error' && (
-          <button type='button' aria-label='Повернутись на головну' onClick={() => navigate('/')} className="btn-blue btn-lg">
-            Повернутись на головну
-          </button>
-        )}
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

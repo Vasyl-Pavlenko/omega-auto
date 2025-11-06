@@ -52,6 +52,10 @@ const NotFoundPage = React.lazy(
   () => import(/* webpackChunkName: "NotFoundPage" */ './pages/NotFoundPage'),
 );
 
+const UsefulGuidesPage = React.lazy(
+  () => import(/* webpackChunkName: "UsefulGuidesPage" */ './pages/UsefulGuidesPage'),
+);
+
 const Layout = React.lazy(() => import('./layouts/Layout'));
 
 function App() {
@@ -88,7 +92,8 @@ function App() {
           <Route path="/sent-email-confirmation" element={<EmailSentConfirmationPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-          <Route path="/tyre/:id" element={<TyreDetailsPage />} />
+          <Route path="/tyre/:id/:slug" element={<TyreDetailsPage />} />
+          <Route path="/guides" element={<UsefulGuidesPage />} />
 
           {/* Захищені */}
           <Route

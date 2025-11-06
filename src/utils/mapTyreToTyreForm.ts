@@ -28,6 +28,7 @@ export const mapTyreToTyreForm = (tyre: Tyre): TyreForm => ({
   vehicle: tyre.vehicle,
   year: String(tyre.year ?? ''),
   treadDepth: String(tyre.treadDepth ?? ''),
+  treadPercent: String(tyre.treadPercent ?? ''),
   city: tyre.city,
   condition: tyre.condition,
   price: String(tyre.price ?? ''),
