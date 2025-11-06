@@ -47,12 +47,14 @@ export default function MyAdsPage() {
     currentTab === 'favorites'
       ? favorites
       : myTyres.filter((tyre) => {
-          const now = new Date();
+          const willBeDeletedAtDate =
+            tyre.willBeDeletedAt instanceof Date
+              ? tyre.willBeDeletedAt
+              : new Date(tyre.willBeDeletedAt);
+        
+        const expiresAtDate = new Date(tyre.expiresAt);
 
-          const expiresAtDate = new Date(tyre.expiresAt);
-          const willBeDeletedAtDate = new Date(tyre.willBeDeletedAt);
-
-          const isExpiredNow = expiresAtDate <= now;
+        const isExpiredNow = expiresAtDate <= now;
 
           switch (currentTab) {
             case 'active':
