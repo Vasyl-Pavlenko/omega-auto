@@ -171,8 +171,6 @@ export default function HomePage() {
   const now = new Date();
   const activeTyres = tyres.filter((tyre) => new Date(tyre.expiresAt) > now && !tyre.isDeleted);
 
-  console.log(tyres)
-
   return (
     <>
       <HomePageSeo url={process.env.VITE_SITE_URL || ''} />
